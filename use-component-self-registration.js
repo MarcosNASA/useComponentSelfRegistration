@@ -3,22 +3,31 @@ import * as React from 'react'
 export const useComponentSelfRegistration = ({ component, useContext, index: customIndex }) => {
   const [registeredComponents, setRegisteredComponents] = useContext()
 
-  const index =
-    customIndex ??
-    registeredComponents.findIndex((registeredComponent) => component.element === registeredComponent.element)
+  const naturalIndex = registeredComponents.findIndex((registeredComponent) => {
+    return component.element === registeredComponent.element;
+  });
+  const index = customIndex ?? naturalIndex;
 
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     const { element } = component
     const currentElement = element.current
     if (!currentElement) return
 
-    setRegisteredComponents((previousRegisteredComponents) => [
-      ...previousRegisteredComponents,
-      {
-        ...component,
-        index,
-      },
-    ])
+    setRegisteredComponents((previousRegisteredComponents) => {
+      const isRegistered = previousRegisteredComponents.some(
+        (registeredComponent) =>
+          component.element === registeredComponent.element
+      );
+      if (isRegistered) return previousRegisteredComponents;
+
+      return [
+        ...previousRegisteredComponents,
+        {
+          ...component,
+          index
+        }
+      ];
+    });
 
     return () => {
       setRegisteredComponents((previousRegisteredComponents) =>
